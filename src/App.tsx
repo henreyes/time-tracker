@@ -11,6 +11,7 @@ function App() {
     breakHours: number;
     hoursWorked: number;
   }
+
   const sessions: Session[] = [
     {
       description: 'Set up the end session button',
@@ -29,39 +30,43 @@ function App() {
   return (
     
     <>
-        <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-stone-700">
       {/* Sidebar */}
-      <div className="w-1/4 bg-white p-4">
-        <div className="mb-4">
-          <button className="bg-gray-300 p-3 rounded-md">New Session</button>
-        </div>
+        <div className="w-1/4 bg-stone-500 p-4 flex flex-col items-center rounded-tr-md">
+          <div className="mb-4">
+            <button className="bg-gray-300 p-3 rounded-md">New Session</button>
+          </div>
         <div>
-        <button className="bg-gray-300 p-3 rounded-md">End Session</button>
+          <button className="bg-gray-300 p-3 rounded-md">End Session</button>
         </div>
+        <div className="m-5"></div>
+        <button className="bg-gray-300 w-full hover:bg-gray-400"> Today </button>
+        <button className="bg-gray-300 w-full hover:bg-gray-400"> Daily Overview </button>
+        <button className="bg-gray-300 w-full hover:bg-gray-400"> Weekly Overview </button>
       </div>
 
       {/* Main content */}
       <div className="w-3/4 p-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Time Tracker</h1>
+          <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
         </div>
         <div className="overflow-x-auto mt-6">
       <table className="min-w-full leading-normal">
         <thead>
           <tr>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
               Description
             </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
               Start
             </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
               End
             </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
               Break (Hours)
             </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
               Hours Worked
             </th>
           </tr>
