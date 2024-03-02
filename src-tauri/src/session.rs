@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
+use serde::{Serialize, Deserialize};
 
-struct Session {
+#[derive(Serialize, Deserialize)]
+pub struct Session {
     id: u32,
     description: String,
     start_time: DateTime<Utc>,
@@ -9,7 +11,7 @@ struct Session {
 }
 
 impl Session {
-    fn new(id: u32, description: String) -> Self {
+    pub fn new(id: u32, description: String) -> Self {
         Session {
             id,
             description,
@@ -18,7 +20,7 @@ impl Session {
             hours_worked: None,
         }
     }
-    fn end(& mut self) {
+    pub fn end(& mut self) {
         self.end_time = Some(Utc::now());
         
         let duration = self.end_time.expect("Error").signed_duration_since(self.start_time);
