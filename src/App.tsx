@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import playIcon from './assets/play-filled-alt.svg';
 
 function App() {
   const handleNewSessionClick = async () => {
@@ -36,7 +36,12 @@ function App() {
       {/* Sidebar */}
         <div className="w-1/4 bg-stone-500 p-4 flex flex-col items-center rounded-tr-md">
           <div className="mb-4">
-            <button className="bg-gray-300 p-3 rounded-md" onClick={handleNewSessionClick}>New Session</button>
+            <button className="bg-gray-300 p-3 rounded-md" onClick={handleNewSessionClick}>
+              <svg height="32" width="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" className="text-gray-800">
+                <path d="m7 28a1 1 0 0 1 -1-1v-22a1 1 0 0 1 1.4819-.8763l20 11a1 1 0 0 1 0 1.7525l-20 11a1.0005 1.0005 0 0 1 -.4819.1238z" fill="currentColor"/>
+                <path d="m0 0h32v32h-32z" fill="none"/>
+              </svg>
+            </button>
           </div>
         <div>
           <button className="bg-gray-300 p-3 rounded-md">End Session</button>
