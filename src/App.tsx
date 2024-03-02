@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import playIcon from './assets/play-filled-alt.svg';
 
 function App() {
   const handleNewSessionClick = async () => {
@@ -32,7 +31,7 @@ function App() {
   return (
     
     <>
-      <div className="flex h-screen bg-stone-700">
+      <div className="flex h-screen bg-slate-800">
       {/* Sidebar */}
         <div className="w-1/4 bg-stone-500 p-4 flex flex-col items-center rounded-tr-md">
           <div className="mb-4">
@@ -54,54 +53,38 @@ function App() {
 
       {/* Main content */}
       <div className="w-3/4 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
-        </div>
-        <div className="overflow-x-auto mt-6">
-      <table className="min-w-full leading-normal">
-        <thead>
-          <tr>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-              Description
-            </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-              Start
-            </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-              End
-            </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-              Break (Hours)
-            </th>
-            <th className="border-b-2 border-gray-200 px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-              Hours Worked
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sessions.map((session, index) => (
-            <tr key={index}>
-              <td className="border-b border-gray-200 px-5 py-5 text-sm">
-                {session.description}
-              </td>
-              <td className="border-b border-gray-200 px-5 py-5 text-sm">
-                {session.start}
-              </td>
-              <td className="border-b border-gray-200 px-5 py-5 text-sm">
-                {session.end}
-              </td>
-              <td className="border-b border-gray-200 px-5 py-5 text-sm">
-                {session.breakHours}
-              </td>
-              <td className="border-b border-gray-200 px-5 py-5 text-sm">
-                {session.hoursWorked}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+  <div className="flex justify-between items-center mb-4">
+    <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
+  </div>
+  {/* session component */}
+  <div className="rounded-md w-3/4 p-4 bg-blue-400">
+    <div className="flex flex-wrap md:flex-nowrap">
+      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+        Description: 
       </div>
+      <div className="text-white font-medium flex-1 min-w-0">
+        <p className="truncate">description body fasdfafasfafgafa</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap md:flex-nowrap">
+      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+        Start Time: 
+      </div>
+      <div className="text-white font-semibold flex-1 min-w-0">
+        <p className="truncate">1:34pm</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap md:flex-nowrap">
+      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+        End Time: 
+      </div>
+      <div className="text-white font-semibold flex-1 min-w-0">
+        <p className="truncate">2:30pm</p>
+      </div>
+    </div>
+  </div>
+</div>
+
     </div>
 
     </>

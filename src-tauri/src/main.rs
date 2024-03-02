@@ -19,7 +19,6 @@ fn write_to_file(filename: &str, data: &str) -> Result<(), String> {
     Ok(())
 }
 
-
 #[tauri::command]
 fn start_session (description: String) -> Result<(), String> {
     let new_session = Session::new(1, description);
