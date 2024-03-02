@@ -2,8 +2,14 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const handleNewSessionClick = async () => {
+    try {
+      await invoke('start_session', { description: 'testing' });
+      console.log('New session started');
+    } catch (error) {
+      console.error('Error starting new session:', error);
+    }
+  };
   interface Session {
     description: string;
     start: string;
@@ -15,17 +21,13 @@ function App() {
   const sessions: Session[] = [
     {
       description: 'Set up the end session button',
-      start: 'Feb 26, 2024 12:46 PM',
-      end: 'Feb 26, 2024 12:49 PM',
+      start: 'Feb 29, 2024 12:46 PM',
+      end: 'Feb 29, 2024 12:49 PM',
       breakHours: 0.05,
       hoursWorked: 1.22
     },
   ];
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
 
   return (
     
@@ -34,7 +36,7 @@ function App() {
       {/* Sidebar */}
         <div className="w-1/4 bg-stone-500 p-4 flex flex-col items-center rounded-tr-md">
           <div className="mb-4">
-            <button className="bg-gray-300 p-3 rounded-md">New Session</button>
+            <button className="bg-gray-300 p-3 rounded-md" onClick={handleNewSessionClick}>New Session</button>
           </div>
         <div>
           <button className="bg-gray-300 p-3 rounded-md">End Session</button>
@@ -96,35 +98,7 @@ function App() {
     </div>
       </div>
     </div>
-    <div className="bg-blue-400">
-      <h1>Time Tracker</h1>
 
-      <div className="">
-        hello
-      </div>
-
-      <p>Keep track of your task time allocation and view history</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit"
-        className="bg-yellow-500 text-white font-bold py-2 px-4 rounded"
-
-        >Greet</button>
-      </form>
-
-      <p>{greetMsg}</p>
-    </div>
     </>
    
   );
