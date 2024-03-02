@@ -1,13 +1,20 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { useState } from "react";
+import { useState, useRef, useEffect} from "react";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionDescription, setSessionDescription] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleNewSesion = () => {
+    setSessionDescription('');
     setIsModalOpen(true);
   }
+  useEffect(() => {
+    if (isModalOpen) {
+      inputRef.current?.focus();
+    }
+  }, [isModalOpen]);
 
   const handleModalSubmit = async () => {
     try {
@@ -97,9 +104,10 @@ function App() {
     </div>
     {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-slate-700 p-4 rounded">
+          <div className="bg-white p-4 rounded">
             <h2 className="text-lg mb-4">Start New Session</h2>
             <input
+              ref={inputRef}
               type="text"
               className="border p-2 rounded w-full"
               placeholder="Enter description"
