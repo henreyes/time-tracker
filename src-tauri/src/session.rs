@@ -20,6 +20,8 @@ impl Session {
     }
     fn end(& mut self) {
         self.end_time = Some(Utc::now());
-
+        
+        let duration = self.end_time.expect("Error").signed_duration_since(self.start_time);
+        self.hours_worked = Some(duration.num_seconds() as f64 / 3600.0);
     }
 }
