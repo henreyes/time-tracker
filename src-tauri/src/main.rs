@@ -5,11 +5,8 @@ use crate::session::*;
 use std::{fs, io::{self, Read, Write}, path::Path};
 use rusqlite::{Connection, params};
 use std::result::Result as StdResult;
+use chrono::{NaiveDateTime, DateTime, Utc, TimeZone};
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 #[tauri::command]
 fn get_sessions() -> Result<String,String> {
     let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
@@ -38,23 +35,8 @@ fn get_sessions() -> Result<String,String> {
     }
 }
 
-#[tauri::command]
-fn start_session(description: String) -> Result<i32, String> {
-    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
-    let session = Session::new(description);
 
-    conn.execute(
-        "INSERT INTO sessions (description, start_time) VALUES (?1, ?2)",
-        params![
-            session.description,
-            session.start_time.to_rfc3339(),
-        ],
-    ).map_err(|e| e.to_string())?;
 
-    let id = conn.last_insert_rowid() as i32;
-    
-    Ok(id) 
-}
 fn init_db() -> StdResult<(), String> {
     let conn = Connection::open("sessions.db").map_err(|e| format!("Failed to open database: {}", e))?;
     conn.execute(
@@ -70,9 +52,33 @@ fn init_db() -> StdResult<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+fn start_session(description: String) -> Result<i32, String> {
+    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
+    let session = Session::new(description);
+
+  
+    conn.execute(
+        "INSERT INTO sessions (description, start_time) VALUES (?1, ?2)",
+        params![
+            session.description,
+            session.start_time.to_rfc3339(),
+        ],
+    ).map_err(|e| e.to_string())?;
+
+   
+    let id = conn.last_insert_rowid() as i32;
+    
+    Ok(id) 
+}
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, start_session])
+        .invoke_handler(tauri::generate_handler![ start_session, get_sessions])
+        .setup(|_| {
+            init_db().expect("Failed to initialize the database");
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
