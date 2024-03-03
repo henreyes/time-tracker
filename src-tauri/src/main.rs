@@ -22,16 +22,21 @@ fn write_to_file(filename: &str, data: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn start_session (description: String) -> Result<(), String> {
-    let new_session = Session::new(description);
+fn start_session(description: String) -> Result<i32, String> {
+    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
+    let session = Session::new(description);
 
-    let json = serde_json::to_string(&new_session)
-        .map_err(|e| format!("Failed to serialize session: {}", e))?;
+    conn.execute(
+        "INSERT INTO sessions (description, start_time) VALUES (?1, ?2)",
+        params![
+            session.description,
+            session.start_time.to_rfc3339(),
+        ],
+    ).map_err(|e| e.to_string())?;
 
-    write_to_file("/Users/henry/code/p/time-track/src-tauri/session.json", &json)?;
-
-    println!("Session created");
-    Ok(())
+    let id = conn.last_insert_rowid() as i32;
+    
+    Ok(id) 
 }
 fn init_db() -> StdResult<(), String> {
     let conn = Connection::open("sessions.db").map_err(|e| format!("Failed to open database: {}", e))?;
