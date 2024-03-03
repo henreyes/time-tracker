@@ -1,19 +1,19 @@
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
-    id: u32,
-    description: String,
-    start_time: DateTime<Utc>,
-    end_time: Option<DateTime<Utc>>,
-    hours_worked: Option<f64>,
+    pub id: Option<u32>,
+    pub description: String,
+    pub start_time: DateTime<Utc>,
+    pub end_time: Option<DateTime<Utc>>,
+    pub hours_worked: Option<f64>,
 }
 
 impl Session {
-    pub fn new(id: u32, description: String) -> Self {
+    pub fn new(description: String) -> Self {
         Session {
-            id,
+            id: None,
             description,
             start_time: Utc::now(),
             end_time: None,
