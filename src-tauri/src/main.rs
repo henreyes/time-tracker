@@ -11,7 +11,7 @@ use chrono::{NaiveDateTime, DateTime, Utc, TimeZone};
 fn get_sessions() -> Result<String,String> {
     let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
     let mut stmt = conn
-        .prepare("SELECT id, description, start_time, end_time, hours_worked FROM sessions")
+        .prepare("SELECT id, description, start_time, end_time, hours_worked FROM sessions  ORDER BY id DESC")
         .map_err(|e| e.to_string())?;
 
     let sessions_iter = stmt
@@ -19,7 +19,7 @@ fn get_sessions() -> Result<String,String> {
             Ok(Session {
                 id: row.get(0)?,
                 description: row.get(1)?,
-                start_time: Utc::now(),
+                start_time:DateTime::parse_from_rfc3339(&row.get::<_, String>(2)?).map_err(|_| rusqlite::Error::InvalidColumnType(2, "start_time".to_owned(), rusqlite::types::Type::Text))?.with_timezone(&Utc),
                 end_time: Some(Utc::now()),
                 hours_worked: row.get(4)?,
             })
@@ -72,9 +72,21 @@ fn start_session(description: String) -> Result<i32, String> {
     
     Ok(id) 
 }
+#[tauri::command]
+fn end_session(id: u32) -> Result<(), String> {
+    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
+    conn.execute(
+       "UPDATE sessions GET end_time ?1 WHERE id = ?2",
+        params![
+            Utc::now().to_rfc3339(),
+            id,
+        ]
+    ).map_err(|e| e.to_string())?;
+    Ok(())
+}
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![ start_session, get_sessions])
+        .invoke_handler(tauri::generate_handler![ start_session, end_session, get_sessions])
         .setup(|_| {
             init_db().expect("Failed to initialize the database");
             Ok(())
