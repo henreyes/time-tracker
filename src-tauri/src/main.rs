@@ -10,15 +10,32 @@ use std::result::Result as StdResult;
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+#[tauri::command]
+fn get_sessions() -> Result<String,String> {
+    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT id, description, start_time, end_time, hours_worked FROM sessions")
+        .map_err(|e| e.to_string())?;
 
-fn write_to_file(filename: &str, data: &str) -> Result<(), String> {
-    let mut file = std::fs::File::create(filename)
-        .map_err(|e| format!("Failed to create file: {}", e))?;
-
-    file.write_all(data.as_bytes())
-        .map_err(|e| format!("Failed to write to file: {}", e))?;
-
-    Ok(())
+    let sessions_iter = stmt
+        .query_map([], |row| {
+            Ok(Session {
+                id: row.get(0)?,
+                description: row.get(1)?,
+                start_time: Utc::now(),
+                end_time: Some(Utc::now()),
+                hours_worked: row.get(4)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    
+    let sessions: Result<Vec<Session>, _> = sessions_iter.collect();
+    match sessions {
+        Ok(sessions) => {
+            serde_json::to_string(&sessions).map_err(|e| e.to_string())
+        },
+        Err(e) => Err(e.to_string()), 
+    }
 }
 
 #[tauri::command]
