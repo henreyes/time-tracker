@@ -7,38 +7,44 @@ use std::result::Result as StdResult;
 use chrono::{DateTime, Utc};
 
 #[tauri::command]
-fn get_sessions() -> Result<String, String> {
+fn get_sessions(date: Option<String>) -> Result<String, String> {
     let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
-    let mut stmt = conn
-        .prepare("SELECT id, description, start_time, end_time, hours_worked FROM sessions ORDER BY id DESC")
-        .map_err(|e| e.to_string())?;
 
-    let sessions_iter = stmt
-        .query_map([], |row| {
-            let end_time: Option<String> = row.get(3)?;
-            let parsed_end_time = match end_time {
-                Some(et) => Some(DateTime::parse_from_rfc3339(&et).unwrap().with_timezone(&Utc)),
-                None => None,
-            };
-            Ok(Session {
-                id: row.get(0)?,
-                description: row.get(1)?,
-                start_time: DateTime::parse_from_rfc3339(&row.get::<_, String>(2)?).unwrap().with_timezone(&Utc),
-                end_time: parsed_end_time,
-                hours_worked: row.get(4)?,
-            })
-        })
-        .map_err(|e| e.to_string())?;
+    let sql = match date {
+        Some(ref _date) => {
+            "SELECT id, description, start_time, end_time, hours_worked FROM sessions WHERE DATE(start_time) = ?1 ORDER BY id DESC"
+        }
+        None => "SELECT id, description, start_time, end_time, hours_worked FROM sessions ORDER BY id DESC",
+    };
+
+    let mut stmt = conn.prepare(sql).map_err(|e| e.to_string())?;
+
+    let sessions_iter = match date {
+        Some(ref date) => stmt.query_map(params![date], parse_sql_row),
+        None => stmt.query_map([], parse_sql_row),
+    }.map_err(|e| e.to_string())?;
 
     let sessions: Result<Vec<Session>, _> = sessions_iter.collect();
     match sessions {
-        Ok(sessions) => {
-            for session in &sessions {
-                println!("{}", session);
-            }
-            serde_json::to_string(&sessions).map_err(|e| e.to_string())},
+        Ok(sessions) => serde_json::to_string(&sessions).map_err(|e| e.to_string()),
         Err(e) => Err(e.to_string()),
     }
+}
+
+fn parse_sql_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Session> {
+    let end_time: Option<String> = row.get(3)?;
+    let parsed_end_time = match end_time {
+        Some(et) => Some(DateTime::parse_from_rfc3339(&et).unwrap().with_timezone(&Utc)),
+        None => None,
+    };
+
+    Ok(Session {
+        id: row.get(0)?,
+        description: row.get(1)?,
+        start_time: DateTime::parse_from_rfc3339(&row.get::<_, String>(2)?).unwrap().with_timezone(&Utc),
+        end_time: parsed_end_time,
+        hours_worked: row.get(4)?,
+    })
 }
 
 
@@ -77,21 +83,7 @@ fn start_session(description: String) -> Result<i32, String> {
     
     Ok(id) 
 }
-fn parse_sql_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Session> {
-    let end_time: Option<String> = row.get(3)?;
-    let parsed_end_time = match end_time {
-        Some(et) => Some(DateTime::parse_from_rfc3339(&et).unwrap().with_timezone(&Utc)),
-        None => None,
-    };
 
-    Ok(Session {
-        id: row.get(0)?,
-        description: row.get(1)?,
-        start_time: DateTime::parse_from_rfc3339(&row.get::<_, String>(2)?).unwrap().with_timezone(&Utc),
-        end_time: parsed_end_time,
-        hours_worked: row.get(4)?,
-    })
-}
 
 
 #[tauri::command]
