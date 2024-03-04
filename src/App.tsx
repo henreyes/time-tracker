@@ -1,47 +1,65 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { useState, useRef, useEffect} from "react";
+import { useState, useRef, useEffect } from "react";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionDescription, setSessionDescription] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   const handleNewSesion = () => {
     setSessionDescription('');
     setIsModalOpen(true);
-  }
+  };
   useEffect(() => {
     if (isModalOpen) {
       inputRef.current?.focus();
     }
   }, [isModalOpen]);
 
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const fetchedSessions = await invoke<string>('get_sessions');
+      const sessionsData: Session[] = JSON.parse(fetchedSessions);
+      setSessions(sessionsData);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+    }
+  };
+
   const handleModalSubmit = async () => {
     try {
       await invoke('start_session', { description: sessionDescription });
-      console.log('New session started');
-      setIsModalOpen(false); 
+      setIsModalOpen(false);
+      fetchSessions();
     } catch (error) {
       console.error('Error starting new session:', error);
     }
   };
-  interface Session {
-    description: string;
-    start: string;
-    end: string;
-    breakHours: number;
-    hoursWorked: number;
-  }
 
-  const sessions: Session[] = [
-    {
-      description: 'Set up the end session button',
-      start: 'Feb 29, 2024 12:46 PM',
-      end: 'Feb 29, 2024 12:49 PM',
-      breakHours: 0.05,
-      hoursWorked: 1.22
-    },
-  ];
+  const handleEndSession = async () => {
+    if (sessions.length === 0 || sessions[0].end_time) {
+      return;
+    }
+    try {
+      await invoke('end_session', { id: sessions[0].id });
+      fetchSessions();
+    } catch (error) {
+      console.error('Error ending session:', error);
+    }
+  };
+
+  interface Session {
+    id: number;
+    description: string;
+    start_time: string;
+    end_time?: string | null;
+    hours_worked?: number | null;
+  }
 
 
   return (
@@ -59,46 +77,45 @@ function App() {
             </button>
           </div>
         <div>
-          <button className="bg-gray-300 p-3 rounded-md">End Session</button>
+          <button className="bg-gray-300 p-3 rounded-md" onClick={handleEndSession}>End Session</button>
         </div>
         <div className="m-5"></div>
           <button className="bg-gray-300 w-full hover:bg-gray-400"> Today </button>
           <button className="bg-gray-300 w-full hover:bg-gray-400"> Daily Overview </button>
           <button className="bg-gray-300 w-full hover:bg-gray-400"> Weekly Overview </button>
       </div>
-
+      <div>
+      </div>
       {/* Main content */}
       <div className="w-3/4 p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
       </div>
       {/* session component */}
-      <div className="rounded-md w-3/4 p-4 bg-blue-400">
-        <div className="flex flex-wrap md:flex-nowrap">
-          <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-            Description: 
-          </div>
-          <div className="text-white font-medium flex-1 min-w-0">
-            <p className="truncate">description body fasdfafasfafgafa</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap md:flex-nowrap">
-          <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-            Start Time: 
-          </div>
-          <div className="text-white font-semibold flex-1 min-w-0">
-            <p className="truncate">1:34pm</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap md:flex-nowrap">
-          <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-            End Time: 
-          </div>
-          <div className="text-white font-semibold flex-1 min-w-0">
-            <p className="truncate">2:30pm</p>
-          </div>
-        </div>
+      {sessions.map((session, index) => (
+  <div key={session.id} className="rounded-md w-3/4 p-4 bg-blue-400 m-5">
+    {/* Other session details */}
+    <div className="flex flex-wrap md:flex-nowrap">
+        
+      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+        Start Time:
       </div>
+      <div className="text-white font-semibold flex-1 min-w-0">
+        <p className="truncate">{session.start_time}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap md:flex-nowrap">
+      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+        End Time:
+      </div>
+      <div className="text-white font-semibold flex-1 min-w-0">
+        <p className="truncate">
+          {session.end_time ? session.end_time : "In Progress"}
+        </p>
+      </div>
+    </div>
+  </div>
+))}
     </div>
 
     </div>
