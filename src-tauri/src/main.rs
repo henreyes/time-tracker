@@ -77,6 +77,22 @@ fn start_session(description: String) -> Result<i32, String> {
     
     Ok(id) 
 }
+fn parse_sql_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Session> {
+    let end_time: Option<String> = row.get(3)?;
+    let parsed_end_time = match end_time {
+        Some(et) => Some(DateTime::parse_from_rfc3339(&et).unwrap().with_timezone(&Utc)),
+        None => None,
+    };
+
+    Ok(Session {
+        id: row.get(0)?,
+        description: row.get(1)?,
+        start_time: DateTime::parse_from_rfc3339(&row.get::<_, String>(2)?).unwrap().with_timezone(&Utc),
+        end_time: parsed_end_time,
+        hours_worked: row.get(4)?,
+    })
+}
+
 
 #[tauri::command]
 fn end_session(id: i32) -> Result<(), String> {
