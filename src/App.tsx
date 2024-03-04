@@ -6,9 +6,16 @@ function App() {
   const [isStartingNewSession, setIsStartingNewSession] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
 
   const handleNewSessionToggle = () => {
+    if (sessions.length > 0 && !sessions[0].end_time) {
+      setAlertMessage("Cannot start a new session while there's an active session.");
+      setShowAlert(true);
+      return;
+    }
     setIsStartingNewSession(!isStartingNewSession);
     setSessionDescription('');
     if (!isStartingNewSession) {
@@ -88,7 +95,7 @@ function App() {
                 onChange={(e) => setSessionDescription(e.target.value)}
                 onBlur={() => setIsStartingNewSession(false)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && sessionDescription.trim() !== "") {
                     generateSession();
                   }
                 }}
@@ -119,8 +126,11 @@ function App() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
       </div>
+      {showAlert && ( 
+          <button className="bg-red-900 w-3/4 m-5 p-2 rounded hover:bg-opacity-50" onClick={() => setShowAlert(false)}> <p className="text-red-400">{alertMessage}</p></button>
+      )}
       {/* session component */}
-      {sessions.map((session, index) => (
+      {sessions.map((session) => (
           <div key={session.id} className="rounded-md w-3/4 p-4 bg-blue-400 m-5">
             {/* Other session details */}
             <div className="flex flex-wrap md:flex-nowrap">
