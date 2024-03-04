@@ -60,6 +60,17 @@ function App() {
     end_time?: string | null;
     hours_worked?: number | null;
   }
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(date);
+  };
 
 
   return (
@@ -93,29 +104,29 @@ function App() {
       </div>
       {/* session component */}
       {sessions.map((session, index) => (
-  <div key={session.id} className="rounded-md w-3/4 p-4 bg-blue-400 m-5">
-    {/* Other session details */}
-    <div className="flex flex-wrap md:flex-nowrap">
-        
-      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-        Start Time:
-      </div>
-      <div className="text-white font-semibold flex-1 min-w-0">
-        <p className="truncate">{session.start_time}</p>
-      </div>
-    </div>
-    <div className="flex flex-wrap md:flex-nowrap">
-      <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-        End Time:
-      </div>
-      <div className="text-white font-semibold flex-1 min-w-0">
-        <p className="truncate">
-          {session.end_time ? session.end_time : "In Progress"}
-        </p>
-      </div>
-    </div>
-  </div>
-))}
+          <div key={session.id} className="rounded-md w-3/4 p-4 bg-blue-400 m-5">
+            {/* Other session details */}
+            <div className="flex flex-wrap md:flex-nowrap">
+                
+              <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+                Start Time:
+              </div>
+              <div className="text-white font-semibold flex-1 min-w-0">
+                <p className="truncate">{formatDate(session.start_time)}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap md:flex-nowrap">
+              <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+                End Time:
+              </div>
+              <div className="text-white font-semibold flex-1 min-w-0">
+                <p className="truncate">
+                  {session.end_time ? formatDate(session.end_time) : "In Progress"}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
     </div>
 
     </div>
