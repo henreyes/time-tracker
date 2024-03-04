@@ -2,7 +2,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { useState, useRef, useEffect } from "react";
 
 function App() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionDescription, setSessionDescription] = useState('');
   const [isStartingNewSession, setIsStartingNewSession] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -17,11 +16,14 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    if (isModalOpen) {
-      inputRef.current?.focus();
+  const generateSession = async () => {
+    try {
+      await invoke('start_session', { description: sessionDescription });
+      fetchSessions();
+    } catch (error) {
+      console.error('Error starting new session:', error);
     }
-  }, [isModalOpen]);
+  };
 
   useEffect(() => {
     fetchSessions();
@@ -85,6 +87,11 @@ function App() {
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
                 onBlur={() => setIsStartingNewSession(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    generateSession();
+                  }
+                }}
               />
             ) : (
               <button className="bg-gray-300 p-3 rounded-md flex items-center" onClick={handleNewSessionToggle}>
