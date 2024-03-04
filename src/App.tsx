@@ -4,13 +4,19 @@ import { useState, useRef, useEffect } from "react";
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionDescription, setSessionDescription] = useState('');
+  const [isStartingNewSession, setIsStartingNewSession] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const handleNewSesion = () => {
+
+  const handleNewSessionToggle = () => {
+    setIsStartingNewSession(!isStartingNewSession);
     setSessionDescription('');
-    setIsModalOpen(true);
+    if (!isStartingNewSession) {
+      setTimeout(() => inputRef.current?.focus(), 150); 
+    }
   };
+
   useEffect(() => {
     if (isModalOpen) {
       inputRef.current?.focus();
@@ -28,16 +34,6 @@ function App() {
       setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching sessions:', error);
-    }
-  };
-
-  const handleModalSubmit = async () => {
-    try {
-      await invoke('start_session', { description: sessionDescription });
-      setIsModalOpen(false);
-      fetchSessions();
-    } catch (error) {
-      console.error('Error starting new session:', error);
     }
   };
 
@@ -76,17 +72,31 @@ function App() {
   return (
     
     <>
-      <div className="flex h-screen bg-slate-800">
+      <div className="flex h-full bg-slate-800">
       {/* Sidebar */}
-        <div className="w-1/4 bg-stone-500 p-4 flex flex-col items-center rounded-tr-md">
-          <div className="mb-4">
-            <button className="bg-gray-300 p-3 rounded-md" onClick={handleNewSesion}>
-              <svg height="32" width="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" className="text-gray-800">
+      <div className="w-1/4 bg-slate-700/75 p-4 flex flex-col items-center rounded-tr-md">
+          <div className={`mb-4 transition-all duration-300 ease-in-out ${isStartingNewSession ? 'w-auto' : 'w-auto'}`}>
+            {isStartingNewSession ? (
+              <input
+                ref={inputRef}
+                type="text"
+                className="border p-2 rounded w-full bg-stone-300 focus:outline-none"
+                placeholder="Enter description"
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
+                onBlur={() => setIsStartingNewSession(false)}
+              />
+            ) : (
+              <button className="bg-gray-300 p-3 rounded-md flex items-center" onClick={handleNewSessionToggle}>
+                <p>Start Session</p>
+                <svg height="32" width="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" className="text-gray-800">
                 <path d="m7 28a1 1 0 0 1 -1-1v-22a1 1 0 0 1 1.4819-.8763l20 11a1 1 0 0 1 0 1.7525l-20 11a1.0005 1.0005 0 0 1 -.4819.1238z" fill="currentColor"/>
                 <path d="m0 0h32v32h-32z" fill="none"/>
               </svg>
-            </button>
+              </button>
+            )}
           </div>
+
         <div>
           <button className="bg-gray-300 p-3 rounded-md" onClick={handleEndSession}>End Session</button>
         </div>
@@ -128,37 +138,8 @@ function App() {
           </div>
         ))}
     </div>
-
     </div>
-    {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded">
-            <h2 className="text-lg mb-4">Start New Session</h2>
-            <input
-              ref={inputRef}
-              type="text"
-              className="border p-2 rounded w-full"
-              placeholder="Enter description"
-              value={sessionDescription}
-              onChange={(e) => setSessionDescription(e.target.value)}
-            />
-            <div className="mt-4 flex justify-end">
-              <button
-                className="bg-blue-500 text-white p-2 rounded mr-2"
-                onClick={handleModalSubmit}
-              >
-                Start Session
-              </button>
-              <button
-                className="bg-red-500 text-white p-2 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </>
    
   );
