@@ -80,16 +80,34 @@ fn start_session(description: String) -> Result<i32, String> {
 
 #[tauri::command]
 fn end_session(id: i32) -> Result<(), String> {
-    let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
-    conn.execute(
-        "UPDATE sessions SET end_time = ?1 WHERE id = ?2",
+    let mut conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
+    let tx = conn.transaction().map_err(|e| e.to_string())?;
+
+    let start_time: String = tx.query_row(
+        "SELECT start_time FROM sessions WHERE id = ?1",
+        params![id],
+        |row| row.get(0),
+    ).map_err(|e| e.to_string())?;
+
+    let start_time = DateTime::parse_from_rfc3339(&start_time).unwrap().with_timezone(&Utc);
+    let end_time = Utc::now();
+    let duration = end_time.signed_duration_since(start_time);
+    let hours_worked = duration.num_seconds() as f64 / 3600.0;
+
+    tx.execute(
+        "UPDATE sessions SET end_time = ?1, hours_worked = ?2 WHERE id = ?3",
         params![
-            Utc::now().to_rfc3339(),
+            end_time.to_rfc3339(),
+            hours_worked,
             id,
         ],
     ).map_err(|e| e.to_string())?;
+
+    tx.commit().map_err(|e| e.to_string())?;
+
     Ok(())
 }
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![ start_session, end_session, get_sessions])
