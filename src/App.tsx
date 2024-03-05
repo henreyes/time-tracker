@@ -9,7 +9,6 @@ function App() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
-
   const handleNewSessionToggle = () => {
     if (sessions.length > 0 && !sessions[0].end_time) {
       setAlertMessage("Cannot start a new session while there's an active session.");
@@ -37,13 +36,27 @@ function App() {
   }, []);
 
   const fetchSessions = async () => {
+    const { start, end } = getLocalDayStartAndEndInUTC();
     try {
-      const fetchedSessions = await invoke<string>('get_sessions');
+      const fetchedSessions = await invoke<string>('get_sessions', { start, end });;
       const sessionsData: Session[] = JSON.parse(fetchedSessions);
       setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     }
+  };
+  const getLocalDayStartAndEndInUTC = () => {
+    const startOfLocalDay = new Date();
+    startOfLocalDay.setHours(0, 0, 0, 0);
+    
+    const endOfLocalDay = new Date(startOfLocalDay);
+    endOfLocalDay.setDate(startOfLocalDay.getDate() + 1);
+    endOfLocalDay.setMilliseconds(endOfLocalDay.getMilliseconds() - 1);
+  
+    return {
+      start: startOfLocalDay.toISOString(),
+      end: endOfLocalDay.toISOString()
+    };
   };
 
   const handleEndSession = async () => {
@@ -65,25 +78,17 @@ function App() {
     end_time?: string | null;
     hours_worked?: number | null;
   }
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(date);
-  };
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString); 
+    return date.toLocaleString(); 
 
-
+  }
   return (
     
     <>
-      <div className="flex h-full bg-slate-800">
+      <div className="flex h-full bg-emerald-950">
       {/* Sidebar */}
-      <div className="w-1/4 bg-slate-700/75 p-4 flex flex-col items-center rounded-tr-md">
+      <div className="w-1/4 bg-emerald-800/75 p-4 flex flex-col items-center rounded-tr-md">
           <div className={`mb-4 transition-all duration-300 ease-in-out ${isStartingNewSession ? 'w-auto' : 'w-auto'}`}>
             {isStartingNewSession ? (
               <input
@@ -131,22 +136,22 @@ function App() {
       )}
       {/* session component */}
       {sessions.map((session) => (
-          <div key={session.id} className="rounded-md w-3/4 p-4 bg-blue-400 m-5">
+          <div key={session.id} className="rounded-md w-3/4 p-4 bg-emerald-500 m-5">
             {/* Other session details */}
             <div className="flex flex-wrap md:flex-nowrap">
                 
-              <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
-                Start Time:
+              <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
+                ({session.id}) Start Time:
               </div>
-              <div className="text-white font-semibold flex-1 min-w-0">
+              <div className="text-emerald-800 font-semibold flex-1 min-w-0">
                 <p className="truncate">{formatDate(session.start_time)}</p>
               </div>
             </div>
             <div className="flex flex-wrap md:flex-nowrap">
-              <div className="text-cyan-950 font-bold mr-5 whitespace-nowrap">
+              <div className="text-emerald-900  font-bold mr-5 whitespace-nowrap">
                 End Time:
               </div>
-              <div className="text-white font-semibold flex-1 min-w-0">
+              <div className="text-emerald-800  font-semibold flex-1 min-w-0">
                 <p className="truncate">
                   {session.end_time ? formatDate(session.end_time) : "In Progress"}
                 </p>
