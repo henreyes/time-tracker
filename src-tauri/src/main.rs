@@ -7,26 +7,20 @@ use std::result::Result as StdResult;
 use chrono::{DateTime, Utc};
 
 #[tauri::command]
-fn get_sessions(date: Option<String>) -> Result<String, String> {
+fn get_sessions(start: String, end: String) -> Result<String, String> {
     let conn = Connection::open("sessions.db").map_err(|e| e.to_string())?;
-
-    let sql = match date {
-        Some(ref _date) => {
-            "SELECT id, description, start_time, end_time, hours_worked FROM sessions WHERE DATE(start_time) = ?1 ORDER BY id DESC"
-        }
-        None => "SELECT id, description, start_time, end_time, hours_worked FROM sessions ORDER BY id DESC",
-    };
+    let sql = "
+        SELECT id, description, start_time, end_time, hours_worked 
+        FROM sessions WHERE start_time >= ?1 AND start_time <= ?2 ORDER BY id DESC";
 
     let mut stmt = conn.prepare(sql).map_err(|e| e.to_string())?;
-
-    let sessions_iter = match date {
-        Some(ref date) => stmt.query_map(params![date], parse_sql_row),
-        None => stmt.query_map([], parse_sql_row),
-    }.map_err(|e| e.to_string())?;
+    let sessions_iter = stmt.query_map(params![start, end], parse_sql_row).map_err(|e| e.to_string())?;
 
     let sessions: Result<Vec<Session>, _> = sessions_iter.collect();
     match sessions {
-        Ok(sessions) => serde_json::to_string(&sessions).map_err(|e| e.to_string()),
+        Ok(sessions) => {
+            serde_json::to_string(&sessions).map_err(|e| e.to_string())
+        },
         Err(e) => Err(e.to_string()),
     }
 }
