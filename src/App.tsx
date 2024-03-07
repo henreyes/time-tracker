@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { useState, useRef, useEffect } from "react";
+import { formatDateOnly, formatTime, localTimeZone, Session } from "./util";
 
 function App() {
   const [sessionDescription, setSessionDescription] = useState('');
@@ -36,7 +37,7 @@ function App() {
   }, []);
 
   const fetchSessions = async () => {
-    const { start, end } = getLocalDayStartAndEndInUTC();
+    const { start, end } = localTimeZone();
     try {
       const fetchedSessions = await invoke<string>('get_sessions', { start, end });;
       const sessionsData: Session[] = JSON.parse(fetchedSessions);
@@ -45,20 +46,7 @@ function App() {
       console.error('Error fetching sessions:', error);
     }
   };
-  const getLocalDayStartAndEndInUTC = () => {
-    const startOfLocalDay = new Date();
-    startOfLocalDay.setHours(0, 0, 0, 0);
-    
-    const endOfLocalDay = new Date(startOfLocalDay);
-    endOfLocalDay.setDate(startOfLocalDay.getDate() + 1);
-    endOfLocalDay.setMilliseconds(endOfLocalDay.getMilliseconds() - 1);
-  
-    return {
-      start: startOfLocalDay.toISOString(),
-      end: endOfLocalDay.toISOString()
-    };
-  };
-
+ 
   const handleEndSession = async () => {
     if (sessions.length === 0 || sessions[0].end_time) {
       return;
@@ -70,19 +58,6 @@ function App() {
       console.error('Error ending session:', error);
     }
   };
-
-  interface Session {
-    id: number;
-    description: string;
-    start_time: string;
-    end_time?: string | null;
-    hours_worked?: number | null;
-  }
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString); 
-    return date.toLocaleString(); 
-
-  }
   return (
     
     <>
@@ -116,52 +91,61 @@ function App() {
             )}
           </div>
 
-        <div>
-          <button className="bg-gray-300 p-3 rounded-md" onClick={handleEndSession}>End Session</button>
+          <div>
+            <button className="bg-gray-300 p-3 rounded-md" onClick={handleEndSession}>End Session</button>
+          </div>
+          <div className="m-5"></div>
+            <button className="bg-gray-300 w-full hover:bg-gray-400"> Today </button>
+            <button className="bg-gray-300 w-full hover:bg-gray-400"> Daily Overview </button>
+            <button className="bg-gray-300 w-full hover:bg-gray-400"> Weekly Overview </button>
         </div>
-        <div className="m-5"></div>
-          <button className="bg-gray-300 w-full hover:bg-gray-400"> Today </button>
-          <button className="bg-gray-300 w-full hover:bg-gray-400"> Daily Overview </button>
-          <button className="bg-gray-300 w-full hover:bg-gray-400"> Weekly Overview </button>
-      </div>
-      <div>
+        <div>
       </div>
     {/* Main content */}
-<div className="w-3/4 p-4 h-screen">
-  <div className="flex justify-between items-center mb-4">
-    <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
-  </div>
-  {sessions.length === 0 ? (
-    <div className="text-white text-lg">No assignments tracked today.</div>
-  ) : (
-    sessions.map((session) => (
-      <div key={session.id} className="rounded-md w-3/4 p-4 bg-emerald-500 m-5">
-        {/* Other session details */}
-        <div className="flex flex-wrap md:flex-nowrap">
-          <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
-            ({session.id}) Start Time:
-          </div>
-          <div className="text-emerald-800 font-semibold flex-1 min-w-0">
-            <p className="truncate">{formatDate(session.start_time)}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap md:flex-nowrap">
-          <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
-            End Time:
-          </div>
-          <div className="text-emerald-800 font-semibold flex-1 min-w-0">
-            <p className="truncate">
-              {session.end_time ? formatDate(session.end_time) : "In Progress"}
-            </p>
-          </div>
-        </div>
+    <div className="w-3/4 p-4 h-screen  overflow-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
       </div>
-    ))
-  )}
-</div>
-</div>
+      {showAlert && (
+        <div className="bg-red-900 w-3/4 m-5 p-2 rounded hover:bg-opacity-50" onClick={() => setShowAlert(false)}>
+          <p className="text-red-400">{alertMessage}</p>
+        </div>
+      )}
+      {sessions.length === 0 ? (
+        <div className="text-white text-lg">No assignments tracked today.</div>
+      ) : (
+        sessions.map((session) => (
+          <div key={session.id} className="rounded-md w-3/4 p-4 bg-gradient-to-br from-green-400 to-emerald-500  m-5">
+            <div className="w-fit  text-white  rounded-lg  font-bold">{session.description}</div>
+            <div className="font-semibold text-emerald-700"> {formatDateOnly(session.start_time).toLowerCase()}</div>
+            {session.end_time ? (
+
+          <div className="flex flex-wrap md:flex-nowrap">
+            <div className="text-emerald-900 font-bold mr-2 whitespace-nowrap">
+              Duration:
+            </div>
+            <div className="text-emerald-800 font-semibold flex-1 min-w-0">
+              <p className="truncate">
+                {`${formatTime(session.start_time)} - ${formatTime(session.end_time)}`}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap md:flex-nowrap">
+            <div className="text-emerald-900 font-bold mr-2 whitespace-nowrap">
+              Started At:
+            </div>
+            <div className="text-emerald-800 font-semibold flex-1 min-w-0">
+              <p className="truncate">{formatTime(session.start_time)}</p>
+            </div>
+          </div>
+        )}
+          </div>
+        ))
+      )}
+    </div>
+    </div>
     </>
-   
   );
 }
 
