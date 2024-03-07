@@ -88,7 +88,7 @@ function App() {
     <>
       <div className="flex h-full bg-emerald-950">
       {/* Sidebar */}
-      <div className="w-1/4 bg-emerald-800/75 p-4 flex flex-col items-center rounded-tr-md">
+      <div className="w-1/4 bg-emerald-800/75 p-4  h-full flex flex-col items-center rounded-tr-md">
           <div className={`mb-4 transition-all duration-300 ease-in-out ${isStartingNewSession ? 'w-auto' : 'w-auto'}`}>
             {isStartingNewSession ? (
               <input
@@ -126,42 +126,40 @@ function App() {
       </div>
       <div>
       </div>
-      {/* Main content */}
-      <div className="w-3/4 p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
-      </div>
-      {showAlert && ( 
-          <button className="bg-red-900 w-3/4 m-5 p-2 rounded hover:bg-opacity-50" onClick={() => setShowAlert(false)}> <p className="text-red-400">{alertMessage}</p></button>
-      )}
-      {/* session component */}
-      {sessions.map((session) => (
-          <div key={session.id} className="rounded-md w-3/4 p-4 bg-emerald-500 m-5">
-            {/* Other session details */}
-            <div className="flex flex-wrap md:flex-nowrap">
-                
-              <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
-                ({session.id}) Start Time:
-              </div>
-              <div className="text-emerald-800 font-semibold flex-1 min-w-0">
-                <p className="truncate">{formatDate(session.start_time)}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap md:flex-nowrap">
-              <div className="text-emerald-900  font-bold mr-5 whitespace-nowrap">
-                End Time:
-              </div>
-              <div className="text-emerald-800  font-semibold flex-1 min-w-0">
-                <p className="truncate">
-                  {session.end_time ? formatDate(session.end_time) : "In Progress"}
-                </p>
-              </div>
-            </div>
+    {/* Main content */}
+<div className="w-3/4 p-4 h-screen">
+  <div className="flex justify-between items-center mb-4">
+    <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
+  </div>
+  {sessions.length === 0 ? (
+    <div className="text-white text-lg">No assignments tracked today.</div>
+  ) : (
+    sessions.map((session) => (
+      <div key={session.id} className="rounded-md w-3/4 p-4 bg-emerald-500 m-5">
+        {/* Other session details */}
+        <div className="flex flex-wrap md:flex-nowrap">
+          <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
+            ({session.id}) Start Time:
           </div>
-        ))}
-    </div>
-    </div>
-
+          <div className="text-emerald-800 font-semibold flex-1 min-w-0">
+            <p className="truncate">{formatDate(session.start_time)}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap md:flex-nowrap">
+          <div className="text-emerald-900 font-bold mr-5 whitespace-nowrap">
+            End Time:
+          </div>
+          <div className="text-emerald-800 font-semibold flex-1 min-w-0">
+            <p className="truncate">
+              {session.end_time ? formatDate(session.end_time) : "In Progress"}
+            </p>
+          </div>
+        </div>
+      </div>
+    ))
+  )}
+</div>
+</div>
     </>
    
   );
