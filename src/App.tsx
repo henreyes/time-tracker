@@ -35,6 +35,22 @@ function App() {
       setPomodoroInterval(interval);
     }
   };
+
+  const pausePomodoro = () => {
+    if (pomodoroInterval !== null) {
+      clearInterval(pomodoroInterval);
+      setIsPomodoroActive(false);
+    }
+  };
+
+  const endPomodoroSession = () => {
+    if (pomodoroInterval !== null) {
+      clearInterval(pomodoroInterval);
+    }
+    setIsPomodoroActive(false);
+    setPomodoroTimeLeft(25 * 60); 
+  
+  };
   
 
   const handleNewSessionToggle = () => {
@@ -133,13 +149,31 @@ function App() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex row w-3/4 m-5  justify-between items-center">
             <h1 className="text-2xl font-bold text-white">Lock In</h1>
+            {isPomodoroActive ? (
+          <>
+            <div>
             <button
-                className='bg-emerald-800 p-3 rounded-3xl font-bold text-emerald-300 hover:bg-emerald-900 transition-all duration-400 ease-in-out'
-                onClick={startPomodoro}
-              >
-                {isPomodoroActive ? `Pause (${Math.floor(pomodoroTimeLeft / 60)}:${(`0${pomodoroTimeLeft % 60}`).slice(-2)})` : "Pomodoro"}
-              </button>
-
+              className='bg-slate-700 p-5 rounded-l-3xl font-bold text-slate-300 transition-all duration-300 ease-in-out'
+              onClick={pausePomodoro}
+            >
+              ({Math.floor(pomodoroTimeLeft / 60)}:{(`0${pomodoroTimeLeft % 60}`).slice(-2)})
+            </button>
+            <button
+              className=' bg-slate-800 p-5 rounded-r-3xl font-bold text-slate-500 transition-all duration-300 ease-in-out'
+              onClick={endPomodoroSession}
+            >
+              End Session
+            </button>
+            </div>
+          </>
+        ) : (
+          <button
+            className='bg-gray-900 p-5 rounded-3xl font-bold text-slate-300 hover:bg-slate-700 transition-all duration-800 ease-in-out'
+            onClick={startPomodoro}
+          >
+            Start Pomodoro
+          </button>
+        )}
           </div>
         
       </div>
