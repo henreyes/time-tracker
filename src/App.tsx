@@ -9,6 +9,33 @@ function App() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [isPomodoroActive, setIsPomodoroActive] = useState(false);
+  const [pomodoroTimeLeft, setPomodoroTimeLeft] = useState(25 * 60); 
+  const [pomodoroInterval, setPomodoroInterval] = useState<null | number>(null);
+
+
+  const startPomodoro = () => {
+    if (isPomodoroActive) {
+      if (pomodoroInterval !== null) {
+        clearInterval(pomodoroInterval);
+        setIsPomodoroActive(false);
+      }
+    } else {
+      setIsPomodoroActive(true);
+      const interval = setInterval(() => {
+        setPomodoroTimeLeft((timeLeft) => {
+          if (timeLeft <= 1) {
+            clearInterval(interval);
+            setIsPomodoroActive(false);
+            return 25 * 60; 
+          }
+          return timeLeft - 1;
+        });
+      }, 1000);
+      setPomodoroInterval(interval);
+    }
+  };
+  
 
   const handleNewSessionToggle = () => {
     if (sessions.length > 0 && !sessions[0].end_time) {
@@ -102,9 +129,19 @@ function App() {
         <div>
       </div>
     {/* Main content */}
-    <div className="w-3/4 p-4 h-screen  overflow-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-white">Time Tracker</h1>
+      <div className="w-3/4 p-4 h-screen  overflow-auto">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex row w-3/4 m-5  justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">Lock In</h1>
+            <button
+                className='bg-emerald-800 p-3 rounded-3xl font-bold text-emerald-300 hover:bg-emerald-900 transition-all duration-400 ease-in-out'
+                onClick={startPomodoro}
+              >
+                {isPomodoroActive ? `Pause (${Math.floor(pomodoroTimeLeft / 60)}:${(`0${pomodoroTimeLeft % 60}`).slice(-2)})` : "Pomodoro"}
+              </button>
+
+          </div>
+        
       </div>
       {showAlert && (
         <div className="bg-red-900 w-3/4 m-5 p-2 rounded hover:bg-opacity-50" onClick={() => setShowAlert(false)}>
@@ -115,7 +152,7 @@ function App() {
         <div className="text-white text-lg">No assignments tracked today.</div>
       ) : (
         sessions.map((session) => (
-          <div key={session.id} className="rounded-md w-3/4 p-4 bg-gradient-to-br from-green-400 to-emerald-500  m-5">
+          <div key={session.id} className="rounded-md w-3/4 p-4 bg-gradient-to-br from-green-500 to-emerald-500  m-5">
             <div className="w-fit  text-white  rounded-lg  font-bold">{session.description}</div>
             <div className="font-semibold text-emerald-700"> {formatDateOnly(session.start_time).toLowerCase()}</div>
             {session.end_time ? (
